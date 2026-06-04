@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- SEO Meta Tags -->
+    <title>I turned 20 today — Premium Personal Workspace & Life Tracker</title>
+    <meta name="description" content="An aesthetic, high-productivity workspace combining study tracks, goal planners, finances, fitness habits, and screen time metrics, framed around a ticking year countdown and Git contribution graph." />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body class="obsidian-theme">
+    <div id="app" class="app-layout">
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar glass-panel">
+        <div class="sidebar-brand">
+          <span class="brand-glow"></span>
+          <div class="logo-box">⚡</div>
+          <div class="brand-text">
+            <h1>I turned 20 today</h1>
+            <span class="sub-logo font-accent">Life Repository</span>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <button class="nav-item active" id="nav-dashboard" data-view="dashboard">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </button>
+          <button class="nav-item" id="nav-degree" data-view="degree">
+            <i data-lucide="graduation-cap"></i>
+            <span>Syllabus Track</span>
+          </button>
+          <button class="nav-item" id="nav-calendar" data-view="calendar">
+            <i data-lucide="calendar"></i>
+            <span>Study Planner</span>
+          </button>
+          <button class="nav-item" id="nav-goals" data-view="goals">
+            <i data-lucide="target"></i>
+            <span>Life Goals</span>
+          </button>
+          <button class="nav-item" id="nav-finances" data-view="finances">
+            <i data-lucide="wallet"></i>
+            <span>Finances</span>
+          </button>
+          <button class="nav-item" id="nav-fitness" data-view="fitness">
+            <i data-lucide="activity"></i>
+            <span>Fitness & Habits</span>
+          </button>
+          <button class="nav-item" id="nav-pomodoro" data-view="pomodoro">
+            <i data-lucide="timer"></i>
+            <span>Focus Mode</span>
+          </button>
+          <button class="nav-item" id="nav-journal" data-view="journal">
+            <i data-lucide="book-open"></i>
+            <span>Daily Log</span>
+          </button>
+        </nav>
+
+        <!-- Sidebar Footer & Settings -->
+        <div class="sidebar-footer">
+          <!-- User Profile Chip (populated after onboarding) -->
+          <div class="sidebar-profile-chip" id="sidebar-profile-chip" style="display:none;">
+            <div class="profile-avatar-chip" id="profile-avatar-chip">⚡</div>
+            <div class="profile-info-chip">
+              <span class="profile-name-chip" id="profile-name-chip">User</span>
+              <span class="profile-inst-chip" id="profile-inst-chip">Dashboard</span>
+            </div>
+            <button class="profile-chip-edit" id="profile-chip-edit" title="Edit profile">
+              <i data-lucide="edit-3"></i>
+            </button>
+            <button class="profile-chip-logout" id="profile-chip-logout" title="Sign out" style="display:none;">
+              <i data-lucide="log-out"></i>
+            </button>
+          </div>
+          <button class="footer-btn" id="btn-open-settings" title="Configuration">
+            <i data-lucide="settings"></i>
+            <span>Settings</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="main-content" id="main-view-container">
+        <!-- Rendered component templates get injected here -->
+      </main>
+    </div>
+
+    <!-- Settings Overlay Modal -->
+    <div class="modal-overlay hidden" id="settings-modal">
+      <div class="glass-card modal-content">
+        <div class="modal-header">
+          <h3>Workspace Settings</h3>
+          <button class="icon-btn" id="btn-close-settings-modal"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Date of Birth</label>
+            <input type="date" id="settings-dob" class="glass-input" />
+          </div>
+          <div class="form-group">
+            <label>Expected Lifespan (Years)</label>
+            <input type="number" id="settings-lifespan" class="glass-input" min="50" max="120" value="80" />
+          </div>
+          <div class="form-group">
+            <label>Currency Layout</label>
+            <div class="segmented-control" id="settings-currency-segmented">
+              <button type="button" class="segment-btn active" data-value="₹">₹ Rupees (INR)</button>
+              <button type="button" class="segment-btn" data-value="$">$ Dollars (USD)</button>
+            </div>
+          </div>
+          
+          <hr class="modal-separator" />
+          
+          <div class="backup-restore-section">
+            <h4>Data Backup & Portability</h4>
+            <p class="sub-text">Export your dashboard configuration to a local JSON file or import a previous backup.</p>
+            <div class="backup-actions">
+              <button class="btn btn-secondary w-100" id="btn-export-data">
+                <i data-lucide="download"></i> Export JSON
+              </button>
+              <button class="btn btn-secondary w-100" id="btn-trigger-import">
+                <i data-lucide="upload"></i> Import JSON
+              </button>
+              <input type="file" id="import-file-input" class="hidden" accept=".json" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="btn-save-settings">Save Configurations</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onboarding portal — the wizard renders here over the full screen -->
+    <div id="onboarding-portal"></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
