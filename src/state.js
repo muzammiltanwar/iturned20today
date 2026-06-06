@@ -13,86 +13,20 @@ export function getTodayDateString() {
 }
 
 const DEFAULT_STATE = {
-  birthDate: '2006-06-04',
+  isPro: false,
+  birthDate: '',
   expectedLifespan: 80,
-  monthlyBudget: 1500,
-  currencySymbol: '₹', // Default currency is INR
-  screenTimeLog: {}, // { 'YYYY-MM-DD': hours }
-  dailyJournal: {}, // { 'YYYY-MM-DD': { mood: 3, highlight: '', notes: '', blockers: [] } }
-  degrees: [
-    {
-      id: 'deg-1',
-      title: 'BSc Computer Science',
-      modules: [
-        {
-          id: 'mod-1',
-          name: 'Data Structures & Algorithms',
-          topics: [
-            { id: 'top-1-1', name: 'Arrays & Linked Lists', completed: true },
-            { id: 'top-1-2', name: 'Binary Search Trees', completed: false, blocker: 'Found recursion concepts difficult' },
-            { id: 'top-1-3', name: 'Graph Traversals (BFS/DFS)', completed: false }
-          ],
-          lectures: [
-            { id: 'lec-1-1', date: '2026-06-02', topic: 'Complexity analysis (Big O)', lecturer: 'Dr. Alan Turing', keyTakeaways: 'Master theorem limits, worst case vs average case.', notes: 'Focus on recursion trees.' },
-            { id: 'lec-1-2', date: '2026-06-04', topic: 'BST insertions and deletions', lecturer: 'Dr. Alan Turing', keyTakeaways: 'Deletions have 3 cases. Successor finding is key.', notes: 'Need to write code practice.' }
-          ],
-          studyLogs: [
-            { id: 'stl-1-1', date: '2026-06-02', duration: 90, notes: 'Implemented doubly linked list from scratch.' },
-            { id: 'stl-1-3', date: '2026-06-03', duration: 60, notes: 'Completed Big-O homework sheets.' }
-          ]
-        },
-        {
-          id: 'mod-2',
-          name: 'Web Development',
-          topics: [
-            { id: 'top-2-1', name: 'HTML & CSS Essentials', completed: true },
-            { id: 'top-2-2', name: 'Modern ES6+ Javascript', completed: true },
-            { id: 'top-2-3', name: 'Vite & Vanilla Components', completed: false }
-          ],
-          lectures: [
-            { id: 'lec-2-1', date: '2026-06-03', topic: 'Javascript Event Loop', lecturer: 'Prof. Tim Berners-Lee', keyTakeaways: 'Microtasks vs Macrotasks execution order.', notes: 'Callbacks go to queue, promises go to microtask.' }
-          ],
-          studyLogs: [
-            { id: 'stl-2-1', date: '2026-06-04', duration: 120, notes: 'Designed CSS glassmorphic components for portfolio.' }
-          ]
-        }
-      ]
-    }
-  ],
-  activeDegreeId: 'deg-1',
-  goals: [
-    {
-      id: 'goal-1',
-      category: 'career',
-      title: 'Land a software engineering summer internship',
-      completed: false,
-      milestones: [
-        { id: 'ms-1-1', title: 'Build portfolio website', completed: true },
-        { id: 'ms-1-2', title: 'Solve 100 LeetCode problems', completed: false },
-        { id: 'ms-1-3', title: 'Apply to 20 companies', completed: false }
-      ]
-    },
-    {
-      id: 'goal-2',
-      category: 'skills',
-      title: 'Master Piano & Music Theory',
-      completed: false,
-      milestones: [
-        { id: 'ms-2-1', title: 'Learn key signatures', completed: true },
-        { id: 'ms-2-2', title: 'Practice Moonlight Sonata 1st Movement', completed: false }
-      ]
-    }
-  ],
+  monthlyBudget: 0,
+  currencySymbol: '₹',
+  screenTimeLog: {}, 
+  dailyJournal: {}, 
+  degrees: [],
+  activeDegreeId: null,
+  exams: [],
+  goals: [],
   finances: {
-    transactions: [
-      { id: 'tx-1', date: '2026-06-02', type: 'income', category: 'Freelance', amount: 35000, description: 'Website development landing page' },
-      { id: 'tx-2', date: '2026-06-03', type: 'expense', category: 'Food', amount: 1500, description: 'Dinner with friends' },
-      { id: 'tx-3', date: '2026-06-04', type: 'expense', category: 'Subscription', amount: 999, description: 'Spotify Premium' }
-    ],
-    savingsGoals: [
-      { id: 'save-1', title: 'New MacBook Pro', target: 200000, current: 85000 },
-      { id: 'save-2', title: 'Emergency Fund', target: 500000, current: 220000 }
-    ]
+    transactions: [],
+    savingsGoals: []
   },
   fitness: {
     habits: [
@@ -101,22 +35,15 @@ const DEFAULT_STATE = {
       { id: 'hab-3', name: 'Sleep', target: 8, current: 0, unit: 'hrs' },
       { id: 'hab-4', name: 'Workout', target: 1, current: 0, unit: 'session' }
     ],
-    dailyLogs: {} // { 'YYYY-MM-DD': { habits: { 'hab-1': 2 }, weight: 70 } }
+    dailyLogs: {} 
   },
   pomodoroSettings: {
     workTime: 25,
     breakTime: 5
   },
-  history: {}, // { 'YYYY-MM-DD': { tasksCompleted: 4, score: 5 } }
-  calendarEvents: [
-    { id: 'evt-1', date: '2026-06-02', title: 'Big O Lecture', type: 'live', moduleId: 'mod-1', duration: 60, completed: true },
-    { id: 'evt-2', date: '2026-06-04', title: 'Self study trees', type: 'self', moduleId: 'mod-1', duration: 90, completed: true },
-    { id: 'evt-3', date: '2026-06-05', title: 'Code Vite CSS layout', type: 'self', moduleId: 'mod-2', duration: 120, completed: false }
-  ],
-  focusHistory: [
-    { id: 'foc-1', date: '2026-06-03', taskTitle: 'Solve BST deletes', duration: 45 },
-    { id: 'foc-2', date: '2026-06-04', taskTitle: 'CSS layout research', duration: 30 }
-  ]
+  history: {}, 
+  calendarEvents: [],
+  focusHistory: []
 };
 
 class StateManager {
@@ -148,6 +75,7 @@ class StateManager {
       
       // Ensure arrays exist
       if (!merged.degrees) merged.degrees = DEFAULT_STATE.degrees;
+      if (!merged.exams) merged.exams = DEFAULT_STATE.exams;
       if (!merged.focusHistory) merged.focusHistory = DEFAULT_STATE.focusHistory;
       if (!merged.currencySymbol) merged.currencySymbol = '₹';
 
@@ -169,12 +97,54 @@ class StateManager {
     }
   }
 
-  save() {
+  saveLocal() {
     try {
       localStorage.setItem(STATE_KEY, JSON.stringify(this.state));
       this.triggerListeners();
     } catch (e) {
-      console.error('Failed to save state:', e);
+      console.error('Failed to save state locally:', e);
+    }
+  }
+
+  save() {
+    this.saveLocal();
+    
+    // Cloud sync for authenticated users
+    if (this.state.userProfile && this.state.userProfile.clerkUserId) {
+      // Fire and forget push to cloud
+      import('./lib/auth.js').then(({ pushRemoteState }) => {
+        pushRemoteState(this.state.userProfile.clerkUserId, this.state);
+      });
+    }
+  }
+
+  async loadRemoteState() {
+    if (this.state.userProfile && this.state.userProfile.clerkUserId) {
+      try {
+        const { pullRemoteState } = await import('./lib/auth.js');
+        const remoteState = await pullRemoteState(this.state.userProfile.clerkUserId);
+        if (remoteState) {
+          this.state = { ...this.state, ...remoteState };
+          
+          // Ensure modules inside degrees have logs and lectures arrays from remote state
+          if (this.state.degrees) {
+            this.state.degrees.forEach(deg => {
+              if (deg.modules) {
+                deg.modules = deg.modules.map(mod => ({
+                  lectures: [],
+                  studyLogs: [],
+                  ...mod
+                }));
+              }
+            });
+          }
+
+          localStorage.setItem('iturned20today_onboarding_complete', 'true');
+          this.saveLocal();
+        }
+      } catch (err) {
+        console.error('Failed to sync remote state', err);
+      }
     }
   }
 
@@ -201,9 +171,19 @@ class StateManager {
     this.save();
   }
 
+  upgradeToPro() {
+    this.state.isPro = true;
+    this.save();
+  }
+
+  updateBudget(budget) {
+    this.state.monthlyBudget = budget;
+    this.save();
+  }
+
   // --- Multi-Curricula (Degrees) CRUD ---
   getActiveDegree() {
-    return this.state.degrees.find(d => d.id === this.state.activeDegreeId) || this.state.degrees[0];
+    return this.state.degrees.find(d => d.id === this.state.activeDegreeId) || this.state.degrees[0] || { id: 'temp', title: 'Curriculum', modules: [] };
   }
 
   addDegree(title) {
@@ -236,7 +216,11 @@ class StateManager {
   }
 
   updateDegreeTitle(title) {
-    const activeDegree = this.getActiveDegree();
+    if (this.state.degrees.length === 0) {
+      this.addDegree(title);
+      return;
+    }
+    const activeDegree = this.state.degrees.find(d => d.id === this.state.activeDegreeId) || this.state.degrees[0];
     if (activeDegree) {
       activeDegree.title = title;
       this.save();
@@ -415,6 +399,39 @@ class StateManager {
         this.save();
       }
     }
+  }
+
+  // --- Exams Engine CRUD ---
+  addExam(title, date, type = 'Finals', targetScore = '') {
+    const newExam = {
+      id: `exam-${Date.now()}`,
+      title,
+      date,
+      type,
+      targetScore
+    };
+    if (!this.state.exams) this.state.exams = [];
+    this.state.exams.push(newExam);
+    this.save();
+    return newExam;
+  }
+
+  editExam(examId, title, date, type, targetScore) {
+    if (!this.state.exams) return;
+    const exam = this.state.exams.find(e => e.id === examId);
+    if (exam) {
+      exam.title = title;
+      exam.date = date;
+      exam.type = type;
+      exam.targetScore = targetScore;
+      this.save();
+    }
+  }
+
+  deleteExam(examId) {
+    if (!this.state.exams) return;
+    this.state.exams = this.state.exams.filter(e => e.id !== examId);
+    this.save();
   }
 
   // --- Focus Mode Session Logs ---
@@ -654,17 +671,17 @@ class StateManager {
   incrementDailyTaskCount(date) {
     if (!this.state.history) this.state.history = {};
     if (!this.state.history[date]) {
-      this.state.history[date] = { tasksCompleted: 0, score: 0 };
+      this.state.history[date] = { tasksCompleted: 0, manualTasksCompleted: 0, score: 0 };
     }
-    this.state.history[date].tasksCompleted = (this.state.history[date].tasksCompleted || 0) + 1;
-    this.state.history[date].score = Math.min(5, this.state.history[date].tasksCompleted);
+    this.state.history[date].manualTasksCompleted = (this.state.history[date].manualTasksCompleted || 0) + 1;
+    this.updateDailyProductivityScore(date);
     this.save();
   }
 
   decrementDailyTaskCount(date) {
     if (!this.state.history || !this.state.history[date]) return;
-    this.state.history[date].tasksCompleted = Math.max(0, (this.state.history[date].tasksCompleted || 0) - 1);
-    this.state.history[date].score = Math.min(5, this.state.history[date].tasksCompleted);
+    this.state.history[date].manualTasksCompleted = Math.max(0, (this.state.history[date].manualTasksCompleted || 0) - 1);
+    this.updateDailyProductivityScore(date);
     this.save();
   }
 
@@ -673,12 +690,8 @@ class StateManager {
     let tasksCompleted = 0;
 
     const journal = this.state.dailyJournal[date];
-    if (journal && journal.highlight) {
-      tasksCompleted += 1;
-    }
-    if (journal && journal.mood) {
-      tasksCompleted += 1;
-    }
+    if (journal && journal.highlight) tasksCompleted += 1;
+    if (journal && journal.mood) tasksCompleted += 1;
 
     const fitnessLog = this.state.fitness.dailyLogs[date];
     if (fitnessLog && fitnessLog.habits) {
@@ -694,16 +707,25 @@ class StateManager {
     const dailyTxCount = this.state.finances.transactions.filter(t => t.date === date).length;
     tasksCompleted += Math.min(dailyTxCount, 2);
 
-    const score = Math.min(5, tasksCompleted);
-    
-    if (!this.state.history) {
-      this.state.history = {};
+    if (this.state.focusHistory) {
+      tasksCompleted += this.state.focusHistory.filter(f => f.date === date).length;
+    }
+
+    if (this.state.calendarEvents) {
+      tasksCompleted += this.state.calendarEvents.filter(e => e.date === date && e.completed).length;
+    }
+
+    if (!this.state.history) this.state.history = {};
+    if (!this.state.history[date]) {
+      this.state.history[date] = { tasksCompleted: 0, manualTasksCompleted: 0, score: 0 };
     }
     
-    this.state.history[date] = {
-      tasksCompleted,
-      score
-    };
+    tasksCompleted += (this.state.history[date].manualTasksCompleted || 0);
+
+    const score = Math.min(5, tasksCompleted);
+    
+    this.state.history[date].tasksCompleted = tasksCompleted;
+    this.state.history[date].score = score;
   }
 
   exportData() {

@@ -23,6 +23,13 @@ export function renderDashboard(container) {
   const elapsedDecadeDays = (now - decadeStartBirth) / (1000 * 60 * 60 * 24);
   const decadeProgressPct = Math.min(100, Math.max(0, (elapsedDecadeDays / totalDecadeDays) * 100));
 
+  const nextBday = new Date(currentYear, birth.getMonth(), birth.getDate());
+  if (now > nextBday) {
+    nextBday.setFullYear(currentYear + 1);
+  }
+  const daysToBday = Math.ceil((nextBday - now) / (1000 * 60 * 60 * 24));
+  const ageTurning = nextBday.getFullYear() - birth.getFullYear();
+
   // Year Progress
   const startOfYearDate = new Date(currentYear, 0, 1);
   const totalYearMs = endOfYear - startOfYearDate;
@@ -76,9 +83,25 @@ export function renderDashboard(container) {
       <!-- Section 1: Hero Countdown & Progress -->
       <div class="glass-card hero-countdown-card">
         <div class="card-glow"></div>
-        <div class="hero-header">
-          <h2>Time Remaining in ${currentYear}</h2>
-          <span class="badge neon-text-gold">${Math.round(100 - yearProgressPct)}% left</span>
+        <div class="hero-header" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem;">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <h2 style="margin: 0;">Time Remaining in ${currentYear}</h2>
+            ${state.isPro ? `
+              <div class="pro-badge-glow" style="display: flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(255, 138, 0, 0.1); border: 1px solid rgba(255, 138, 0, 0.3); border-radius: 20px; font-size: 0.8rem; font-weight: 700; color: #ff8a00; box-shadow: 0 0 10px rgba(255,138,0,0.2); cursor: default;">
+                <span style="font-size: 1rem; animation: pulseGlow 2s infinite alternate;">🔥</span> 
+                <span style="text-shadow: 0 0 5px rgba(255,138,0,0.5);">You're on Hustler Pro Plan</span>
+                <span id="btn-pro-info" style="cursor: pointer; margin-left: 4px; display: inline-flex; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">
+                  <i data-lucide="info" style="width: 14px; height: 14px; color: var(--accent-gold);"></i>
+                </span>
+              </div>
+            ` : `
+              <div style="display: flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.3); border-radius: 20px; font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan); cursor: default;">
+                <span style="font-size: 1rem;">😊</span> 
+                <span>You're on the Free Plan</span>
+              </div>
+            `}
+          </div>
+          <span class="badge neon-text-gold" style="margin: 0;">${Math.round(100 - yearProgressPct)}% left</span>
         </div>
         
         <div class="countdown-timer" id="countdown-timer">
@@ -99,7 +122,10 @@ export function renderDashboard(container) {
           <div class="progress-bar-track">
             <div class="progress-bar-fill" style="width: ${decadeProgressPct}%"></div>
           </div>
-          <p class="progress-subtext">You are currently <strong>${ageYears.toFixed(2)}</strong> years old. Make every day count.</p>
+          <p class="text-secondary" style="font-size: 0.85rem; margin-top: 8px;">
+            You are currently <b>${ageYears.toFixed(2)}</b> years old. 
+            <span style="color: var(--accent-gold);">🎂 You turn ${ageTurning} in ${daysToBday} days.</span> Make every day count.
+          </p>
         </div>
       </div>
 
@@ -124,6 +150,18 @@ export function renderDashboard(container) {
           <div class="stats-mini-label">Budget Utilized</div>
           <div class="stats-mini-value ${budgetRatio > 90 ? 'text-danger' : 'text-warning'}">${budgetRatio.toFixed(0)}%</div>
           <p class="stats-mini-desc">${formatCurrency(Math.round(totalExpense))} of ${formatCurrency(Math.round(state.monthlyBudget))} spent</p>
+        </div>
+      </div>
+
+      <!-- Section 1.75: Upcoming Exams Widget -->
+      <div class="glass-card exams-widget-card" style="grid-column: 1 / -1;">
+        <div class="card-glow"></div>
+        <div class="card-header">
+          <h3>Upcoming Exams & Deadlines</h3>
+          <span class="sub-title">High-stakes countdowns</span>
+        </div>
+        <div class="exams-widget-grid" id="exams-widget-grid">
+          <!-- Rendered exams will go here -->
         </div>
       </div>
 
@@ -193,8 +231,134 @@ export function renderDashboard(container) {
   // Render Screen Time vs Productivity correlation chart
   renderCorrelationChart();
 
+  // Render Upcoming Exams Widget
+  renderExamsWidget();
+
   // Render Blocker Feed
   renderBlockerFeed();
+
+  // Handle Pro Info Modal
+  const proInfoBtn = document.getElementById('btn-pro-info');
+  if (proInfoBtn) {
+    proInfoBtn.addEventListener('click', () => {
+      const modal = document.createElement('div');
+      modal.className = 'glass-modal-overlay';
+      modal.style.position = 'fixed';
+      modal.style.top = '0';
+      modal.style.left = '0';
+      modal.style.width = '100vw';
+      modal.style.height = '100vh';
+      modal.style.backgroundColor = 'rgba(0,0,0,0.6)';
+      modal.style.backdropFilter = 'blur(8px)';
+      modal.style.zIndex = '9999';
+      modal.style.display = 'flex';
+      modal.style.alignItems = 'center';
+      modal.style.justifyContent = 'center';
+      modal.style.animation = 'fadeIn 0.3s ease';
+
+      modal.innerHTML = `
+        <div class="glass-card" style="max-width: 450px; width: 90%; padding: 2.5rem; position: relative; border: 1px solid rgba(255,215,0,0.3); box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,215,0,0.05); animation: slideUp 0.3s ease;">
+          <button class="btn-icon" id="btn-close-pro-modal" style="position: absolute; top: 1rem; right: 1rem;">
+            <i data-lucide="x"></i>
+          </button>
+          
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <i data-lucide="crown" style="width: 48px; height: 48px; color: var(--accent-gold); margin-bottom: 1rem; animation: pulseGlow 2s infinite alternate;"></i>
+            <h3 class="neon-text-gold" style="font-size: 1.8rem; margin-bottom: 0.5rem;">Hustler Pro Plan</h3>
+            <p class="text-secondary" style="font-size: 0.95rem;">You have unlocked the full potential of your workspace.</p>
+          </div>
+          
+          <ul class="tier-features font-accent" style="font-size: 0.95rem; margin-bottom: 2rem; list-style: none; padding: 0;">
+            <li style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px; display: flex; gap: 12px; align-items: flex-start;">
+              <i data-lucide="infinity" class="text-success" style="width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;"></i> 
+              <div><b style="color: #fff;">Unlimited Tracks & Tasks</b><br><span class="text-muted" style="font-size: 0.85rem;">No limits on your goals and habits.</span></div>
+            </li>
+            <li style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px; display: flex; gap: 12px; align-items: flex-start;">
+              <i data-lucide="cloud" class="text-success" style="width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;"></i> 
+              <div><b style="color: #fff;">Cloud Sync</b><br><span class="text-muted" style="font-size: 0.85rem;">Your data is safely backed up.</span></div>
+            </li>
+            <li style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px; display: flex; gap: 12px; align-items: flex-start;">
+              <i data-lucide="activity" class="text-success" style="width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;"></i> 
+              <div><b style="color: #fff;">Full Analytics</b><br><span class="text-muted" style="font-size: 0.85rem;">Access to Fitness & Finances graphs.</span></div>
+            </li>
+          </ul>
+          
+          <button class="btn btn-primary w-100" id="btn-modal-manage-plan">Manage Plan</button>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      if (window.lucide) window.lucide.createIcons();
+
+      const closeModal = () => modal.remove();
+
+      document.getElementById('btn-close-pro-modal').addEventListener('click', closeModal);
+      
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      document.getElementById('btn-modal-manage-plan').addEventListener('click', () => {
+        closeModal();
+        const proBtn = document.getElementById('btn-upgrade-pro');
+        if (proBtn) proBtn.click();
+      });
+    });
+  }
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function renderExamsWidget() {
+  const container = document.getElementById('exams-widget-grid');
+  if (!container) return;
+
+  const exams = stateManager.state.exams || [];
+  if (exams.length === 0) {
+    container.innerHTML = `<p class="empty-text font-accent text-muted">No upcoming exams or deadlines configured.</p>`;
+    return;
+  }
+
+  // Sort exams by date ascending
+  const sorted = [...exams].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  container.innerHTML = sorted.map(exam => {
+    const examDate = new Date(exam.date);
+    const now = new Date();
+    const timeDiff = examDate - now;
+    const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+    
+    let urgencyClass = 'exam-safe';
+    let urgencyText = 'On Track';
+    if (daysLeft < 0) {
+      urgencyClass = 'exam-passed';
+      urgencyText = 'Passed';
+    } else if (daysLeft <= 14) {
+      urgencyClass = 'exam-urgent';
+      urgencyText = 'Critical';
+    } else if (daysLeft <= 30) {
+      urgencyClass = 'exam-warning';
+      urgencyText = 'Approaching';
+    }
+
+    return `
+      <div class="exam-widget-item ${urgencyClass}">
+        <div class="exam-widget-info">
+          <h4 class="font-accent">${exam.title}</h4>
+          <span class="exam-date">${examDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+          <div class="exam-meta">
+            <span class="badge">${exam.type}</span>
+            ${exam.targetScore ? `<span class="badge badge-outline">Target: ${exam.targetScore}</span>` : ''}
+          </div>
+        </div>
+        <div class="exam-widget-countdown">
+          <span class="days-left">${daysLeft >= 0 ? daysLeft : 0}</span>
+          <span class="days-lbl">Days Left</span>
+          <span class="urgency-lbl">${urgencyText}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 function setupCountdownTimer(endTime) {

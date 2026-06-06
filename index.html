@@ -16,14 +16,21 @@
     
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Driver.js for Guided Tour -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
+
   </head>
   <body class="obsidian-theme">
     <div id="app" class="app-layout">
       <!-- Sidebar Navigation -->
-      <aside class="sidebar glass-panel">
+      <aside class="sidebar glass-panel" id="main-sidebar" style="display: none;">
         <div class="sidebar-brand">
           <span class="brand-glow"></span>
-          <div class="logo-box">⚡</div>
+          <div class="logo-box">
+            <img src="/assets/iturned20today-logo.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;" />
+          </div>
           <div class="brand-text">
             <h1>I turned 20 today</h1>
             <span class="sub-logo font-accent">Life Repository</span>
@@ -66,24 +73,15 @@
         </nav>
 
         <!-- Sidebar Footer & Settings -->
-        <div class="sidebar-footer">
-          <!-- User Profile Chip (populated after onboarding) -->
-          <div class="sidebar-profile-chip" id="sidebar-profile-chip" style="display:none;">
-            <div class="profile-avatar-chip" id="profile-avatar-chip">⚡</div>
-            <div class="profile-info-chip">
-              <span class="profile-name-chip" id="profile-name-chip">User</span>
-              <span class="profile-inst-chip" id="profile-inst-chip">Dashboard</span>
-            </div>
-            <button class="profile-chip-edit" id="profile-chip-edit" title="Edit profile">
-              <i data-lucide="edit-3"></i>
-            </button>
-            <button class="profile-chip-logout" id="profile-chip-logout" title="Sign out" style="display:none;">
-              <i data-lucide="log-out"></i>
-            </button>
-          </div>
-          <button class="footer-btn" id="btn-open-settings" title="Configuration">
-            <i data-lucide="settings"></i>
-            <span>Settings</span>
+        <div class="sidebar-footer" style="padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px;">
+          <button class="nav-item" id="btn-open-settings" style="width: 100%; justify-content: flex-start; padding: 10px 16px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
+            <i data-lucide="user" style="width: 18px; height: 18px; color: var(--text-secondary);"></i>
+            <span style="margin-left: 12px; font-weight: 500; font-size: 0.95rem;">Account</span>
+          </button>
+          
+          <button class="btn btn-primary" id="btn-upgrade-pro" title="Upgrade to Pro" style="width: 100%; padding: 8px 12px; font-size: 0.85rem; border-radius: 12px;">
+            <span style="margin-right: 4px; font-size: 1rem;">🚀</span>
+            <span style="font-weight: 700;">Upgrade</span>
           </button>
         </div>
       </aside>
@@ -92,52 +90,6 @@
       <main class="main-content" id="main-view-container">
         <!-- Rendered component templates get injected here -->
       </main>
-    </div>
-
-    <!-- Settings Overlay Modal -->
-    <div class="modal-overlay hidden" id="settings-modal">
-      <div class="glass-card modal-content">
-        <div class="modal-header">
-          <h3>Workspace Settings</h3>
-          <button class="icon-btn" id="btn-close-settings-modal"><i data-lucide="x"></i></button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label>Date of Birth</label>
-            <input type="date" id="settings-dob" class="glass-input" />
-          </div>
-          <div class="form-group">
-            <label>Expected Lifespan (Years)</label>
-            <input type="number" id="settings-lifespan" class="glass-input" min="50" max="120" value="80" />
-          </div>
-          <div class="form-group">
-            <label>Currency Layout</label>
-            <div class="segmented-control" id="settings-currency-segmented">
-              <button type="button" class="segment-btn active" data-value="₹">₹ Rupees (INR)</button>
-              <button type="button" class="segment-btn" data-value="$">$ Dollars (USD)</button>
-            </div>
-          </div>
-          
-          <hr class="modal-separator" />
-          
-          <div class="backup-restore-section">
-            <h4>Data Backup & Portability</h4>
-            <p class="sub-text">Export your dashboard configuration to a local JSON file or import a previous backup.</p>
-            <div class="backup-actions">
-              <button class="btn btn-secondary w-100" id="btn-export-data">
-                <i data-lucide="download"></i> Export JSON
-              </button>
-              <button class="btn btn-secondary w-100" id="btn-trigger-import">
-                <i data-lucide="upload"></i> Import JSON
-              </button>
-              <input type="file" id="import-file-input" class="hidden" accept=".json" />
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-primary" id="btn-save-settings">Save Configurations</button>
-        </div>
-      </div>
     </div>
 
     <!-- Onboarding portal — the wizard renders here over the full screen -->

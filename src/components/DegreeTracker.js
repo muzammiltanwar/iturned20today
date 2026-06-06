@@ -96,14 +96,35 @@ export function renderDegreeTracker(container) {
             <button class="btn btn-primary" id="btn-add-module"><i data-lucide="plus"></i> Add</button>
           </div>
         </div>
+        
+        <hr class="modal-separator" style="margin: 16px 0;" />
+        
+        <!-- Exam Manager -->
+        <div class="exam-manager-section">
+          <h3>Manage Exams & Deadlines</h3>
+          <div class="exams-list" id="sidebar-exams-list" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;">
+            <!-- Rendered exams -->
+          </div>
+          <div class="add-exam-form glass-card-secondary" style="padding: 10px; border-radius: 8px;">
+            <input type="text" id="input-exam-title" class="glass-input input-sm mb-2" placeholder="Exam Name (e.g. JEE)" style="margin-bottom: 6px;" />
+            <input type="date" id="input-exam-date" class="glass-input input-sm mb-2" style="margin-bottom: 6px;" />
+            <input type="text" id="input-exam-score" class="glass-input input-sm mb-2" placeholder="Target Score (e.g. 99%)" style="margin-bottom: 6px;" />
+            <button class="btn btn-primary btn-sm w-100" id="btn-add-exam"><i data-lucide="plus"></i> Add Exam</button>
+          </div>
+        </div>
       </div>
 
       <!-- Right main panel: Syllabus Tree -->
       <div class="tracker-main glass-card">
         <div class="card-glow"></div>
-        <div class="card-header">
-          <h3>Syllabus breakdown</h3>
-          <span class="sub-title">Log live lectures, subjects, and study hours</span>
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div>
+            <h3>Syllabus Breakdown</h3>
+            <span class="sub-title">Log live lectures, subjects, and study hours for your track</span>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-ai-planner" style="background: var(--gradient-gold); color: #000; font-weight: 600; border: none; box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);">
+            ⚡ Smart Catch-Up Planner
+          </button>
         </div>
 
         <div class="syllabus-tree" id="syllabus-tree-container">
@@ -128,6 +149,25 @@ export function renderDegreeTracker(container) {
         <div class="modal-footer">
           <button class="btn btn-secondary" id="btn-skip-blocker">Skip Blocker Log</button>
           <button class="btn btn-primary" id="btn-save-blocker">Save Blocker</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Planner Overlay Modal -->
+    <div class="modal-overlay hidden" id="ai-planner-modal">
+      <div class="glass-card modal-content" style="max-width: 600px; width: 100%;">
+        <div class="modal-header">
+          <h3 class="neon-text-gold">⚡ Suggested 7-Day Catch-Up Plan</h3>
+          <button class="icon-btn" id="btn-close-ai-modal"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+          <p class="sub-text">Based on your incomplete syllabus topics and upcoming exams, here is an optimized daily breakdown to help you catch up:</p>
+          <div id="ai-planner-results" style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 8px;">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+        <div class="modal-footer" style="justify-content: flex-end;">
+          <button class="btn btn-secondary" id="btn-dismiss-ai-modal">Close</button>
         </div>
       </div>
     </div>
@@ -212,6 +252,43 @@ export function renderDegreeTracker(container) {
   inputNewModule.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') addModuleBtn.click();
   });
+
+  // 6. Manage Exams
+  const examsList = document.getElementById('sidebar-exams-list');
+  if (examsList) {
+    examsList.innerHTML = (state.exams || []).map(exam => `
+      <div class="exam-sidebar-item" style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; position: relative;">
+        <div class="font-accent" style="font-weight: 600; font-size: 13px;">${exam.title}</div>
+        <div class="text-muted" style="font-size: 11px;">${new Date(exam.date).toLocaleDateString()} | Target: ${exam.targetScore || 'N/A'}</div>
+        <button class="icon-btn btn-delete-exam" data-exam-id="${exam.id}" style="position: absolute; right: 4px; top: 8px; width: 20px; height: 20px; padding: 2px;">
+          <i data-lucide="trash" style="width: 12px; height: 12px; color: var(--danger-color);"></i>
+        </button>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('.btn-delete-exam').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.dataset.examId;
+        stateManager.deleteExam(id);
+        renderDegreeTracker(container);
+      });
+    });
+  }
+
+  const addExamBtn = document.getElementById('btn-add-exam');
+  if (addExamBtn) {
+    addExamBtn.addEventListener('click', () => {
+      const title = document.getElementById('input-exam-title').value.trim();
+      const date = document.getElementById('input-exam-date').value;
+      const score = document.getElementById('input-exam-score').value.trim();
+      if (title && date) {
+        stateManager.addExam(title, date, 'Competitive', score);
+        renderDegreeTracker(container);
+      } else {
+        alert('Please provide at least a title and a date for the exam.');
+      }
+    });
+  }
 
   // Render overall modules horizontal study chart
   renderOverallStudyBarChart();
@@ -370,6 +447,7 @@ function renderSyllabusTree(container) {
               <div class="form-grid-study">
                 <input type="text" id="lec-topic-input-${mod.id}" class="glass-input input-sm" placeholder="Lecture Topic (e.g., Red-Black Trees)" />
                 <input type="text" id="lec-prof-input-${mod.id}" class="glass-input input-sm" placeholder="Lecturer" />
+                <input type="date" id="lec-date-input-${mod.id}" class="glass-input input-sm" title="Log Date" />
               </div>
               <textarea id="lec-takeaways-input-${mod.id}" class="glass-input textarea input-sm" placeholder="Key Takeaways..." style="margin: 6px 0; min-height: 40px;"></textarea>
               <textarea id="lec-notes-input-${mod.id}" class="glass-input textarea input-sm" placeholder="General Notes..." style="margin-bottom: 8px; min-height: 40px;"></textarea>
@@ -401,6 +479,7 @@ function renderSyllabusTree(container) {
               <div class="form-grid-study">
                 <input type="number" id="study-dur-input-${mod.id}" class="glass-input input-sm" placeholder="Duration (mins)" />
                 <input type="text" id="study-notes-input-${mod.id}" class="glass-input input-sm" placeholder="What did you study?" />
+                <input type="date" id="study-date-input-${mod.id}" class="glass-input input-sm" title="Session Date" />
               </div>
               <button class="btn btn-primary btn-sm btn-add-study-log" data-module-id="${mod.id}" style="margin-top:8px;">Log Session</button>
             </div>
@@ -573,9 +652,11 @@ function setupTreeEventHandlers(container) {
       const prof = document.getElementById(`lec-prof-input-${modId}`).value.trim();
       const takeaways = document.getElementById(`lec-takeaways-input-${modId}`).value.trim();
       const notes = document.getElementById(`lec-notes-input-${modId}`).value.trim();
+      let dateValue = document.getElementById(`lec-date-input-${modId}`).value;
+      if (!dateValue) dateValue = undefined;
 
       if (topic && takeaways) {
-        stateManager.addLecture(modId, topic, prof, takeaways, notes);
+        stateManager.addLecture(modId, topic, prof, takeaways, notes, dateValue);
         renderDegreeTracker(container);
       } else {
         alert('Please fill out the lecture topic and key takeaways.');
@@ -599,9 +680,11 @@ function setupTreeEventHandlers(container) {
       const modId = btn.dataset.moduleId;
       const dur = parseFloat(document.getElementById(`study-dur-input-${modId}`).value);
       const notes = document.getElementById(`study-notes-input-${modId}`).value.trim();
+      let dateValue = document.getElementById(`study-date-input-${modId}`).value;
+      if (!dateValue) dateValue = undefined;
 
       if (dur > 0 && notes) {
-        stateManager.addStudyLog(modId, dur, notes);
+        stateManager.addStudyLog(modId, dur, notes, dateValue);
         renderDegreeTracker(container);
       } else {
         alert('Please fill out study duration and description.');
@@ -618,7 +701,60 @@ function setupTreeEventHandlers(container) {
       renderDegreeTracker(container);
     });
   });
+
+  // --- AI Catch-Up Planner Logic ---
+  const aiBtn = document.getElementById('btn-ai-planner');
+  const aiModal = document.getElementById('ai-planner-modal');
+  if (aiBtn && aiModal) {
+    aiBtn.addEventListener('click', () => {
+      const resultsContainer = document.getElementById('ai-planner-results');
+      
+      // Collect all incomplete topics
+      let incompleteTopics = [];
+      activeDegree.modules.forEach(m => {
+        m.topics.forEach(t => {
+          if (!t.completed) {
+            incompleteTopics.push({ moduleTitle: m.title, topicTitle: t.title });
+          }
+        });
+      });
+
+      if (incompleteTopics.length === 0) {
+        resultsContainer.innerHTML = `<div class="glass-card" style="padding: 1rem; text-align: center;"><p class="text-success" style="font-weight: 600;">🎉 You are completely caught up! No backlogs found.</p></div>`;
+      } else {
+        // Distribute topics over 7 days using a simple heuristic
+        const days = ['Day 1 (Tomorrow)', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'];
+        const plan = days.map(() => []);
+        
+        incompleteTopics.forEach((topic, i) => {
+          plan[i % 7].push(topic);
+        });
+
+        resultsContainer.innerHTML = plan.map((dayPlan, i) => {
+          if (dayPlan.length === 0) return '';
+          return `
+            <div class="glass-card-secondary" style="padding: 12px; border-radius: 8px;">
+              <h4 class="font-accent" style="margin-bottom: 8px; color: var(--accent-gold);">${days[i]}</h4>
+              <ul style="list-style: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
+                ${dayPlan.map(t => `<li style="font-size: 0.9rem;"><span class="badge" style="font-size: 0.7rem; margin-right: 6px;">${t.moduleTitle}</span> ${t.topicTitle}</li>`).join('')}
+              </ul>
+            </div>
+          `;
+        }).join('');
+      }
+
+      aiModal.classList.remove('hidden');
+    });
+
+    document.getElementById('btn-close-ai-modal').addEventListener('click', () => {
+      aiModal.classList.add('hidden');
+    });
+    document.getElementById('btn-dismiss-ai-modal').addEventListener('click', () => {
+      aiModal.classList.add('hidden');
+    });
+  }
 }
+
 
 function openBlockerModal(modId, topicId, container) {
   const modal = document.getElementById('blocker-modal');

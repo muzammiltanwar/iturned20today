@@ -1,5 +1,5 @@
 // PomodoroTimer.js
-import { stateManager } from '../state.js';
+import { stateManager, getTodayDateString } from '../state.js';
 
 let timerInterval = null;
 let secondsLeft = 25 * 60;
@@ -55,6 +55,20 @@ export function renderPomodoroTimer(container) {
             label: `🎯 ${goal.title}: ${ms.title}`
           });
         }
+      });
+    }
+  });
+
+  // Add today's calendar events
+  const todayStr = getTodayDateString();
+  const calendarEvents = state.calendarEvents || [];
+  calendarEvents.forEach(evt => {
+    if (!evt.completed && evt.date === todayStr) {
+      taskOptions.push({
+        type: 'calendar',
+        id: evt.id,
+        name: evt.title,
+        label: `📅 Calendar: ${evt.title}`
       });
     }
   });
@@ -299,6 +313,11 @@ function startTimer() {
         // Add Study Log if syllabus topic
         if (selectedTask.type === 'syllabus' && selectedTask.moduleId) {
           stateManager.addStudyLog(selectedTask.moduleId, focusDuration, `Focused Study Session: ${selectedTask.name}`);
+          stateManager.toggleTopicCompletion(selectedTask.moduleId, selectedTask.id, true);
+        } else if (selectedTask.type === 'milestone' && selectedTask.goalId) {
+          stateManager.toggleMilestone(selectedTask.goalId, selectedTask.id, true);
+        } else if (selectedTask.type === 'calendar') {
+          stateManager.toggleCalendarEventCompletion(selectedTask.id, true);
         }
       }
 

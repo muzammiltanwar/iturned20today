@@ -3561,3 +3561,9 @@ select.glass-input {
   border-top: 1px solid rgba(255,255,255,.06);
 }
 .ob-step-lbl { font-size: .78rem; color: var(--text-muted); letter-spacing: .5px; }
+
+.form-group-row { display: flex; gap: 8px; align-items: stretch; }
+.form-group-row > input, .form-group-row > div { flex: 1; min-width: 0; }
+.form-group-row .btn, .form-group-row .segmented-control { flex-shrink: 0; white-space: nowrap; }
+.pricing-card { overflow: visible !important; }
+.pricing-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0, 242, 254, 0.15); }

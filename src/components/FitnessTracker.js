@@ -86,9 +86,9 @@ export function renderFitnessTracker(container) {
         
         <div class="weight-logger-box">
           <label>Log Weight (kg)</label>
-          <div class="form-group-row">
-            <input type="number" id="input-weight" class="glass-input" step="0.1" value="${todayLog.weight || ''}" placeholder="e.g. 72.5" />
-            <button class="btn btn-primary" id="btn-save-weight">Log</button>
+          <div class="form-group-row" style="display: flex; gap: 8px;">
+            <input type="number" id="input-weight" class="glass-input" step="0.1" value="${todayLog.weight || ''}" placeholder="e.g. 72.5" style="width: 100%; min-width: 0;" />
+            <button class="btn btn-primary" id="btn-save-weight" style="flex-shrink: 0; padding: 0 16px;">Log</button>
           </div>
         </div>
 

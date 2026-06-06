@@ -9,6 +9,8 @@ import { renderFinanceTracker } from './components/FinanceTracker.js';
 import { renderFitnessTracker } from './components/FitnessTracker.js';
 import { renderPomodoroTimer } from './components/PomodoroTimer.js';
 import { renderDailyJournal } from './components/DailyJournal.js';
+import { renderAccountManager } from './components/AccountManager.js';
+import { renderPricing } from './components/Pricing.js';
 import { renderOnboarding, isOnboardingComplete, resetOnboarding } from './components/Onboarding.js';
 import { checkAuthSession, signOut, isClerkConfigured } from './lib/auth.js';
 
@@ -44,49 +46,142 @@ function mountView(viewName) {
       renderGoalTracker(container);
       break;
     case 'finances':
-      renderFinanceTracker(container);
+      if (!stateManager.state.isPro) {
+        renderUpgradePrompt(container, 'Finance Tracking', 'money-bag', 'Take control of your cashflow. Track expenses, monitor budgets, and achieve financial freedom.', 'finances');
+      } else {
+        renderFinanceTracker(container);
+      }
       break;
     case 'fitness':
-      renderFitnessTracker(container);
+      if (!stateManager.state.isPro) {
+        renderUpgradePrompt(container, 'Fitness & Habits', 'activity', 'Log your workouts, monitor daily steps, and build ironclad habits that compound over time.', 'fitness');
+      } else {
+        renderFitnessTracker(container);
+      }
       break;
     case 'pomodoro':
       renderPomodoroTimer(container);
       break;
     case 'journal':
-      renderDailyJournal(container);
+      if (!stateManager.state.isPro) {
+        renderUpgradePrompt(container, 'Daily Journal', 'book-open', 'Clear your mind. A private space to reflect, log gratitude, and track your daily emotional state.', 'journal');
+      } else {
+        renderDailyJournal(container);
+      }
+      break;
+    case 'account':
+      renderAccountManager(container);
+      break;
+    case 'pricing':
+      renderPricing(container);
       break;
     default:
       renderDashboard(container);
   }
 
   // Ensure Lucide renders icons in the new DOM tree
-  if (window.lucide) {
-    window.lucide.createIcons();
-  }
+  if (window.lucide) window.lucide.createIcons();
 }
+
+function renderUpgradePrompt(container, featureName, iconName, description, mockType) {
+  // Render a mock blurred background depending on the feature
+  let mockHtml = '';
+  if (mockType === 'finances') {
+    mockHtml = `
+      <div class="locked-demo-content">
+        <div class="dashboard-grid">
+          <div class="glass-card"><div style="height: 150px; background: rgba(0,242,254,0.1); border-radius: 10px;"></div></div>
+          <div class="glass-card"><div style="height: 150px; background: rgba(16,185,129,0.1); border-radius: 10px;"></div></div>
+          <div class="glass-card" style="grid-column: 1 / -1;"><div style="height: 300px; background: rgba(255,255,255,0.05); border-radius: 10px;"></div></div>
+        </div>
+      </div>
+    `;
+  } else if (mockType === 'fitness') {
+    mockHtml = `
+      <div class="locked-demo-content">
+        <div style="display: flex; gap: 20px;">
+          <div class="glass-card" style="flex: 1;"><div style="height: 200px; border-radius: 50%; width: 200px; background: rgba(239,68,68,0.1); margin: 0 auto;"></div></div>
+          <div class="glass-card" style="flex: 2;"><div style="height: 60px; background: rgba(255,255,255,0.05); margin-bottom: 10px;"></div><div style="height: 60px; background: rgba(255,255,255,0.05);"></div></div>
+        </div>
+      </div>
+    `;
+  } else {
+    mockHtml = `
+      <div class="locked-demo-content">
+        <div class="glass-card" style="height: 400px; width: 100%;">
+          <div style="height: 40px; width: 30%; background: rgba(255,255,255,0.1); margin-bottom: 20px;"></div>
+          <div style="height: 20px; width: 90%; background: rgba(255,255,255,0.05); margin-bottom: 10px;"></div>
+          <div style="height: 20px; width: 85%; background: rgba(255,255,255,0.05); margin-bottom: 10px;"></div>
+          <div style="height: 20px; width: 95%; background: rgba(255,255,255,0.05); margin-bottom: 10px;"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = `
+    <div class="locked-feature-container">
+      ${mockHtml}
+      <div class="locked-overlay-panel glass-card">
+        <div class="glow-orb"></div>
+        <i data-lucide="${iconName}" style="width: 56px; height: 56px; color: var(--accent-cyan); margin-bottom: 1.5rem; position: relative; z-index: 2;"></i>
+        <h2 class="font-accent" style="font-size: 2.2rem; margin-bottom: 1rem; position: relative; z-index: 2;">Unlock ${featureName}</h2>
+        <p class="text-secondary" style="margin-bottom: 2rem; font-size: 1.1rem; line-height: 1.6; max-width: 400px; margin-left: auto; margin-right: auto; position: relative; z-index: 2;">
+          ${description}
+        </p>
+        <button class="btn btn-primary" style="padding: 12px 32px; font-size: 1.1rem; border-radius: 30px; position: relative; z-index: 2; box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);" onclick="document.getElementById('btn-upgrade-pro').click()">
+          <i data-lucide="zap"></i> Upgrade to Hustler
+        </button>
+      </div>
+    </div>
+  `;
+}
+
 
 // --- Sidebar Profile Chip ---
 function updateSidebarProfile() {
-  const profile = stateManager.state.userProfile;
-  const chip = document.getElementById('sidebar-profile-chip');
-  if (!chip || !profile) return;
+  const profile = stateManager.state.userProfile || {};
+  const chip = document.getElementById('user-profile-chip');
+  
+  if (chip) {
+    const avatarEl = chip.querySelector('.profile-avatar');
+    const nameEl = chip.querySelector('.profile-name');
+    const instEl = chip.querySelector('.profile-status');
+    const logoutBtn = document.getElementById('btn-logout');
 
-  const avatarEl = document.getElementById('profile-avatar-chip');
-  const nameEl = document.getElementById('profile-name-chip');
-  const instEl = document.getElementById('profile-inst-chip');
-  const logoutBtn = document.getElementById('profile-chip-logout');
-
-  if (avatarEl) avatarEl.textContent = profile.avatarEmoji || '⚡';
-  if (nameEl) nameEl.textContent = profile.displayName || 'User';
-  if (instEl) instEl.textContent = profile.institution || stateManager.getActiveDegree()?.title || 'Life Repository';
-
-  chip.style.display = 'flex';
-
-  if (logoutBtn) {
-    if (isClerkConfigured && profile.clerkUserId) {
-      logoutBtn.style.display = 'flex';
+  if (avatarEl) avatarEl.textContent = profile.avatarEmoji || 'S';
+  if (nameEl) nameEl.textContent = profile.displayName || 'Student User';
+  
+  if (instEl) {
+    if (stateManager.state.isPro) {
+      instEl.textContent = 'Overachiever (Pro)';
+      instEl.style.color = 'var(--accent-gold)';
     } else {
-      logoutBtn.style.display = 'none';
+      instEl.textContent = 'Hustler (Free)';
+      instEl.style.color = 'var(--accent-cyan)';
+    }
+  }
+
+    if (logoutBtn) {
+      if (isClerkConfigured && profile.clerkUserId) {
+        logoutBtn.classList.remove('hidden');
+      } else {
+        logoutBtn.classList.add('hidden');
+      }
+    }
+  }
+
+  const proBtn = document.getElementById('btn-upgrade-pro');
+  if (proBtn) {
+    if (stateManager.state.isPro) {
+      proBtn.innerHTML = `<span style="margin-right: 4px; font-size: 1rem;">👑</span><span style="font-weight: 700;">Manage Plan</span>`;
+      proBtn.disabled = false;
+      proBtn.style.opacity = '1';
+      proBtn.title = 'Manage your Hustler Plan';
+    } else {
+      proBtn.innerHTML = `<span style="margin-right: 4px; font-size: 1rem;">🚀</span><span style="font-weight: 700;">Upgrade</span>`;
+      proBtn.disabled = false;
+      proBtn.style.opacity = '1';
+      proBtn.title = 'Upgrade to Pro';
     }
   }
 
@@ -103,186 +198,123 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 2. Settings Modal Setup
-  const settingsModal = document.getElementById('settings-modal');
+  // 2. Account & Settings Button
   const openSettingsBtn = document.getElementById('btn-open-settings');
-  const closeSettingsBtn = document.getElementById('btn-close-settings-modal');
-  const saveSettingsBtn = document.getElementById('btn-save-settings');
-  const dobInput = document.getElementById('settings-dob');
-  const lifespanInput = document.getElementById('settings-lifespan');
-
-  // Load current profile settings into input
-  dobInput.value = stateManager.state.birthDate;
-  lifespanInput.value = stateManager.state.expectedLifespan || 80;
-
-  let selectedCurrency = stateManager.state.currencySymbol || '₹';
-  const currencyBtns = document.querySelectorAll('#settings-currency-segmented .segment-btn');
-  currencyBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      currencyBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      selectedCurrency = btn.dataset.value;
+  if (openSettingsBtn) {
+    openSettingsBtn.addEventListener('click', () => {
+      mountView('account');
     });
-  });
+  }
 
-  openSettingsBtn.addEventListener('click', () => {
-    dobInput.value = stateManager.state.birthDate;
-    lifespanInput.value = stateManager.state.expectedLifespan || 80;
-    selectedCurrency = stateManager.state.currencySymbol || '₹';
-    currencyBtns.forEach(btn => {
-      if (btn.dataset.value === selectedCurrency) btn.classList.add('active');
-      else btn.classList.remove('active');
+  // 3. Upgrade to Pro Button
+  const upgradeProBtn = document.getElementById('btn-upgrade-pro');
+  if (upgradeProBtn) {
+    upgradeProBtn.addEventListener('click', () => {
+      mountView('pricing');
     });
-    settingsModal.classList.remove('hidden');
-  });
+  }
 
-  const closeSettings = () => {
-    settingsModal.classList.add('hidden');
-  };
-
-  closeSettingsBtn.addEventListener('click', closeSettings);
-
-  saveSettingsBtn.addEventListener('click', () => {
-    const dob = dobInput.value;
-    const lifespan = lifespanInput.value;
-    if (dob) {
-      stateManager.updateProfile(dob, lifespan);
-      stateManager.updateCurrency(selectedCurrency);
-      closeSettings();
-      mountView(currentView);
-    } else {
-      alert('Please select a valid date of birth.');
-    }
-  });
-
-  // 3. Backup and Portability Actions
-  const exportBtn = document.getElementById('btn-export-data');
-  const triggerImportBtn = document.getElementById('btn-trigger-import');
-  const fileInput = document.getElementById('import-file-input');
-
-  exportBtn.addEventListener('click', () => {
-    const jsonStr = stateManager.exportData();
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `iturned20today_backup_${new Date().toISOString().slice(0,10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  });
-
-  triggerImportBtn.addEventListener('click', () => {
-    fileInput.click();
-  });
-
-  fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const contents = event.target.result;
-      const success = stateManager.importData(contents);
-      if (success) {
-        alert('Data successfully imported!');
-        closeSettings();
-        mountView(currentView);
-      } else {
-        alert('Failed to import data. Please check if the file format is valid JSON.');
-      }
-    };
-    reader.readAsText(file);
-  });
-
-  // 4. Profile Chip — Edit button re-opens onboarding
+  // 4. Profile Chip — Edit button navigates to Account page
   const profileChipEdit = document.getElementById('profile-chip-edit');
   if (profileChipEdit) {
     profileChipEdit.addEventListener('click', () => {
-      // Re-open onboarding in edit mode by resetting the completion flag
-      resetOnboarding();
-      const portal = document.getElementById('onboarding-portal');
-      if (portal) {
-        portal.style.opacity = '1';
-        portal.style.pointerEvents = 'all';
-        renderOnboarding(portal, (data) => {
-          portal.innerHTML = '';
-          portal.style.pointerEvents = 'none';
-          updateSidebarProfile();
-          mountView(currentView);
-        });
-      }
+      mountView('account');
     });
   }
 
   // 4b. Profile Chip Logout
-  const profileChipLogout = document.getElementById('profile-chip-logout');
+  const profileChipLogout = document.getElementById('btn-logout');
   if (profileChipLogout) {
     profileChipLogout.addEventListener('click', async () => {
       if (confirm('Are you sure you want to sign out?')) {
         await signOut();
         stateManager.state.userProfile = null;
         resetOnboarding();
-        localStorage.removeItem('iturned20today_onboarding_complete');
+        localStorage.clear();
         location.reload();
       }
     });
   }
 
-  // 5. Check Onboarding Status & Auth Session
+  // 5. App Routing Logic (Auth -> Onboarding -> Dashboard)
   const portal = document.getElementById('onboarding-portal');
   
   const startApp = () => {
+    const sidebar = document.getElementById('main-sidebar');
+    if (sidebar) sidebar.style.display = 'flex';
     updateSidebarProfile();
     mountView('dashboard');
+    
+    // Tutorial Popup Logic (Driver.js)
+    if (localStorage.getItem('iturned20today_tutorial_seen') !== 'true') {
+      setTimeout(() => {
+        if (window.driver) {
+          const driverObj = window.driver.js.driver({
+            showProgress: true,
+            steps: [
+              { element: '.sidebar-brand', popover: { title: 'Welcome to Iturned20today', description: 'Your new personal workspace to track everything that matters.', side: 'right', align: 'start' } },
+              { element: '#nav-dashboard', popover: { title: 'The Dashboard', description: 'Your command center. Add widgets, log daily habits, and see your progress at a glance.', side: 'right', align: 'start' } },
+              { element: '#nav-degree', popover: { title: 'Syllabus Track', description: 'Map out your college courses or online certifications here.', side: 'right', align: 'start' } },
+              { element: '#nav-finances', popover: { title: 'Finance Tracker', description: 'Keep your budget and net worth in check.', side: 'right', align: 'start' } },
+              { element: '.profile-chip', popover: { title: 'Profile & Settings', description: 'Manage your pro subscription, update your goals, and sign out here.', side: 'right', align: 'start' } }
+            ]
+          });
+          driverObj.drive();
+          localStorage.setItem('iturned20today_tutorial_seen', 'true');
+        }
+      }, 500);
+    }
   };
 
-  if (isClerkConfigured) {
-    checkAuthSession().then((hasSession) => {
-      if (hasSession) {
-        localStorage.setItem('iturned20today_onboarding_complete', 'true');
-        if (portal) {
-          portal.innerHTML = '';
-          portal.style.pointerEvents = 'none';
-        }
-        startApp();
-      } else {
-        localStorage.removeItem('iturned20today_onboarding_complete');
-        if (portal) {
-          portal.style.opacity = '1';
-          portal.style.pointerEvents = 'all';
-          renderOnboarding(portal, (data) => {
-            portal.innerHTML = '';
-            portal.style.pointerEvents = 'none';
-            startApp();
-          });
-        }
-      }
-    }).catch((err) => {
-      console.warn('[Main] Auth session restore failed, forcing login:', err);
-      localStorage.removeItem('iturned20today_onboarding_complete');
-      if (portal) {
-        portal.style.opacity = '1';
-        portal.style.pointerEvents = 'all';
-        renderOnboarding(portal, (data) => {
+  const checkRouting = async () => {
+    if (!isClerkConfigured) {
+      // Fallback if no Supabase configured
+      if (!isOnboardingComplete() && portal) {
+        renderOnboarding(portal, () => {
           portal.innerHTML = '';
           portal.style.pointerEvents = 'none';
           startApp();
         });
-      }
-    });
-  } else {
-    if (!isOnboardingComplete() && portal) {
-      renderOnboarding(portal, (data) => {
-        portal.innerHTML = '';
-        portal.style.pointerEvents = 'none';
+      } else {
         startApp();
-      });
-    } else {
-      startApp();
+      }
+      return;
     }
-  }
+
+    try {
+      const hasSession = await checkAuthSession();
+      if (!hasSession) {
+        // Must Authenticate First
+        if (portal) {
+          portal.style.opacity = '1';
+          portal.style.pointerEvents = 'all';
+          const { renderAuthUI } = await import('./lib/auth.js');
+          renderAuthUI(portal);
+        }
+      } else {
+        // Authenticated! Check if onboarding is done.
+        await stateManager.loadRemoteState();
+        if (!isOnboardingComplete() && portal) {
+          portal.style.opacity = '1';
+          portal.style.pointerEvents = 'all';
+          renderOnboarding(portal, () => {
+            portal.innerHTML = '';
+            portal.style.pointerEvents = 'none';
+            startApp();
+          });
+        } else {
+          // Both Auth and Onboarding are complete
+          if (portal) {
+            portal.innerHTML = '';
+            portal.style.pointerEvents = 'none';
+          }
+          startApp();
+        }
+      }
+    } catch (err) {
+      console.error('[Routing] Error checking session:', err);
+    }
+  };
+
+  checkRouting();
 });

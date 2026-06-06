@@ -206,13 +206,21 @@ function renderIncompleteItems(items) {
           <h4>${item.title}</h4>
         </div>
         <div class="item-blocker-input">
-          <label class="font-accent">What blocker did you face?</label>
-          <input type="text" 
-                 class="glass-input blocker-input-field" 
-                 data-item-id="${item.id}" 
-                 data-item-title="${item.title}" 
-                 value="${blockerVal}" 
-                 placeholder="e.g. Spent too much time on Instagram, or concept too confusing" />
+          ${blockerVal ? `
+            <div style="padding: 10px; background: rgba(16, 185, 129, 0.1); border-left: 3px solid var(--accent-emerald); border-radius: 4px; display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="check-circle" class="text-success" style="width:16px; height:16px;"></i>
+              <span class="font-accent text-secondary" style="font-size: 0.9rem;">${blockerVal}</span>
+            </div>
+            <input type="hidden" class="blocker-input-field" data-item-id="${item.id}" data-item-title="${item.title}" value="${blockerVal}" />
+          ` : `
+            <label class="font-accent">What blocker did you face?</label>
+            <input type="text" 
+                   class="glass-input blocker-input-field" 
+                   data-item-id="${item.id}" 
+                   data-item-title="${item.title}" 
+                   value="" 
+                   placeholder="e.g. Spent too much time on Instagram, or concept too confusing" />
+          `}
         </div>
       </div>
     `;

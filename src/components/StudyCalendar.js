@@ -8,69 +8,36 @@ export function renderStudyCalendar(container) {
   const state = stateManager.state;
   
   container.innerHTML = `
-    <div class="calendar-layout-grid">
-      <!-- Left sidebar: Calendar controls and simulated Sync Panel -->
-      <div class="calendar-sidebar glass-card">
-        <div class="card-glow"></div>
-        <h3>Calendar Sync Hub</h3>
-        <p class="subtitle font-accent">Automate your scheduling pipeline</p>
-        
-        <div class="sync-card-premium glass-card-secondary">
-          <div class="sync-header">
-            <i data-lucide="refresh-cw" class="sync-icon animate-spin-slow"></i>
-            <span class="font-accent">Google Calendar Integration</span>
-          </div>
-          <p class="sync-desc">Directly pull live lectures and calendar allocations into your daily flow grid.</p>
-          <button class="btn btn-primary w-100" id="btn-sync-gcal">
-            <i data-lucide="cloud-lightning"></i> Sync Google Calendar
-          </button>
+    <div class="calendar-main glass-card" style="width: 100%;">
+      <div class="card-glow"></div>
+      
+      <div class="calendar-header-row" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 20px;">
+        <div class="month-selector-controls" style="display: flex; align-items: center; gap: 16px;">
+          <button class="icon-btn" id="btn-prev-month"><i data-lucide="chevron-left"></i></button>
+          <h2 id="calendar-month-year-label" class="font-accent" style="margin: 0;">June 2026</h2>
+          <button class="icon-btn" id="btn-next-month"><i data-lucide="chevron-right"></i></button>
         </div>
 
-        <!-- Animated simulation terminal box -->
-        <div class="terminal-box hidden" id="sync-terminal">
-          <div class="terminal-header">
-            <span class="dot red"></span>
-            <span class="dot yellow"></span>
-            <span class="dot green"></span>
-            <span class="title font-accent">gcal-sync.sh</span>
-          </div>
-          <div class="terminal-body font-accent" id="terminal-log">
-            <!-- Terminal output injected dynamically -->
-          </div>
-        </div>
-
-        <div class="planner-quick-add">
-          <h3>Planner Legends</h3>
-          <div class="legend-row-planner">
+        <div class="planner-legends" style="display: flex; gap: 1.5rem; align-items: center; background: rgba(255,255,255,0.03); padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);">
+          <div class="legend-row-planner" style="margin: 0; display: flex; align-items: center; gap: 10px;">
             <span class="indicator-dot type-self"></span>
-            <span class="font-accent">Self Study Session</span>
+            <span class="font-accent" style="font-size: 0.85rem; color: var(--text-secondary);">Self Study</span>
           </div>
-          <div class="legend-row-planner">
+          <div class="legend-row-planner" style="margin: 0; display: flex; align-items: center; gap: 10px;">
             <span class="indicator-dot type-live"></span>
-            <span class="font-accent">Live Lecture Session</span>
+            <span class="font-accent" style="font-size: 0.85rem; color: var(--text-secondary);">Live Lecture</span>
           </div>
         </div>
+
+        <button class="btn btn-secondary btn-sm" id="btn-today-cal">Today</button>
       </div>
 
-      <!-- Right Main: Calendar Grid -->
-      <div class="calendar-main glass-card">
-        <div class="card-glow"></div>
-        <div class="calendar-header-row">
-          <div class="month-selector-controls">
-            <button class="icon-btn" id="btn-prev-month"><i data-lucide="chevron-left"></i></button>
-            <h2 id="calendar-month-year-label" class="font-accent">June 2026</h2>
-            <button class="icon-btn" id="btn-next-month"><i data-lucide="chevron-right"></i></button>
-          </div>
-          <button class="btn btn-secondary btn-sm" id="btn-today-cal">Today</button>
+      <div class="calendar-grid-container">
+        <div class="calendar-weekdays">
+          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
         </div>
-
-        <div class="calendar-grid-container">
-          <div class="calendar-weekdays">
-            <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
-          </div>
-          <div class="calendar-days-grid" id="calendar-days-grid">
-            <!-- Day cells injected dynamically -->
-          </div>
+        <div class="calendar-days-grid" id="calendar-days-grid">
+          <!-- Day cells injected dynamically -->
         </div>
       </div>
     </div>
@@ -147,10 +114,6 @@ export function renderStudyCalendar(container) {
     renderStudyCalendar(container);
   });
 
-  // Bind Google Calendar Sync Simulation
-  document.getElementById('btn-sync-gcal').addEventListener('click', () => {
-    simulateGCalSync();
-  });
 
   // Render Calendar Grid
   renderCalendarDays(container);
@@ -226,12 +189,39 @@ function renderCalendarDays(container) {
   }
 }
 
+function getCombinedEvents(dateStr) {
+  const state = stateManager.state;
+  const combined = [...(state.calendarEvents || []).filter(e => e.date === dateStr)];
+  
+  const activeDegree = stateManager.getActiveDegree();
+  if (activeDegree && activeDegree.modules) {
+    activeDegree.modules.forEach(m => {
+      if (m.lectures) {
+        m.lectures.forEach(l => {
+          if (l.date === dateStr) {
+            combined.push({
+              id: l.id,
+              date: l.date,
+              title: `Logged Lecture: ${l.topic}`,
+              type: 'live',
+              moduleId: m.id,
+              duration: 60,
+              completed: true,
+              isLectureLog: true
+            });
+          }
+        });
+      }
+    });
+  }
+  return combined;
+}
+
 function renderDayEventBadges(dateStr) {
   const eventsContainer = document.getElementById(`day-events-${dateStr}`);
   if (!eventsContainer) return;
 
-  const state = stateManager.state;
-  const events = (state.calendarEvents || []).filter(e => e.date === dateStr);
+  const events = getCombinedEvents(dateStr);
 
   eventsContainer.innerHTML = events
     .map(e => `
@@ -245,7 +235,7 @@ function renderDayEventBadges(dateStr) {
 
 function openDayModal(dateStr, container) {
   const state = stateManager.state;
-  const events = (state.calendarEvents || []).filter(e => e.date === dateStr);
+  const events = getCombinedEvents(dateStr);
 
   // If there are existing events, open the view/details list first
   if (events.length > 0) {
@@ -271,10 +261,14 @@ function openDayModal(dateStr, container) {
                 <span>Duration: ${e.duration} mins</span>
               </div>
               <div class="evt-actions-row">
-                <button class="btn btn-secondary btn-sm btn-delete-cal-evt" data-evt-id="${e.id}"><i data-lucide="trash-2"></i> Delete</button>
-                <button class="btn btn-sm ${e.completed ? 'btn-secondary' : 'btn-success'} btn-complete-cal-evt" data-evt-id="${e.id}">
-                  <i data-lucide="${e.completed ? 'rotate-ccw' : 'check'}"></i> ${e.completed ? 'Undo completed' : 'Mark Completed'}
-                </button>
+                ${e.isLectureLog ? 
+                  `<span class="text-muted" style="font-size:11px;"><i data-lucide="info"></i> Managed in Syllabus Track</span>` 
+                  : 
+                  `<button class="btn btn-secondary btn-sm btn-delete-cal-evt" data-evt-id="${e.id}"><i data-lucide="trash-2"></i> Delete</button>
+                  <button class="btn btn-sm ${e.completed ? 'btn-secondary' : 'btn-success'} btn-complete-cal-evt" data-evt-id="${e.id}">
+                    <i data-lucide="${e.completed ? 'rotate-ccw' : 'check'}"></i> ${e.completed ? 'Undo' : 'Complete'}
+                  </button>`
+                }
               </div>
             </div>
           `;
@@ -408,56 +402,3 @@ function openAddEventModal(dateStr, container) {
   if (window.lucide) window.lucide.createIcons();
 }
 
-function simulateGCalSync() {
-  const term = document.getElementById('sync-terminal');
-  const logEl = document.getElementById('terminal-log');
-  
-  if (!term || !logEl) return;
-
-  term.classList.remove('hidden');
-  logEl.innerHTML = '';
-
-  const logs = [
-    'Initializing OAuth2 connection protocol...',
-    'Requesting scopes: [calendar.readonly, profile]...',
-    'User authorization verified. Token acquired.',
-    'Contacting server: https://apidata.google.com/calendar/v3/users/me/calendarList...',
-    'Connected to primary calendar: "Student Lecture Planner"...',
-    'Fetching allocated allocations for this month...',
-    'Sync engine: Resolving conflicts...',
-    'Sync complete. Process finished.',
-    '<span class="text-success">[OK] Synchronized 3 sessions successfully!</span>'
-  ];
-
-  let line = 0;
-  function printLog() {
-    if (line < logs.length) {
-      const p = document.createElement('p');
-      p.className = 'terminal-line';
-      p.innerHTML = `> ${logs[line]}`;
-      logEl.appendChild(p);
-      line++;
-      setTimeout(printLog, 600);
-    } else {
-      // Inject some mock calendar events into state!
-      const today = new Date();
-      const yr = today.getFullYear();
-      const mt = today.getMonth() + 1;
-      
-      const date1 = `${yr}-${String(mt).padStart(2, '0')}-08`;
-      const date2 = `${yr}-${String(mt).padStart(2, '0')}-12`;
-      
-      // Add events
-      stateManager.addCalendarEvent(date1, 'Maths live lecture', 'live', 'mod-1', 60);
-      stateManager.addCalendarEvent(date2, 'Physics self assignment', 'self', 'mod-2', 90);
-      
-      alert('Simulated sync completed! Added 2 events to your calendar.');
-      
-      // Refresh current view
-      const container = document.getElementById('main-view-container');
-      renderStudyCalendar(container);
-    }
-  }
-
-  printLog();
-}
